@@ -1,0 +1,8 @@
+.idea/
+venv/
+__pycache__
+build/
+dist/
+pywikisource.egg-info/
+
+test.py
