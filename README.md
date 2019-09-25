@@ -9,6 +9,9 @@ This library contains the basic API operations like
 
 It is wikisource dedicated API library.
 
+## Installation
+* `pip install pywikisource`
+
 ## Demo
 ```python
 from pywikisource import WikiSourceApi
