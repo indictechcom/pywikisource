@@ -100,14 +100,15 @@ class WikiSourceApi():
             quality = int(matches[0][0])
             user = matches[0][1]
             timestamp = i['timestamp']
+            rev_id = i['revid']
 
             if (quality == 3) and ( (not old_quality) or old_quality < 3):
                 # Page has proofread
-                status['proofread'] = {"user": user, "timestamp": timestamp}
+                status['proofread'] = {"user": user, "timestamp": timestamp, "revid": rev_id}
 
             if quality == 4 and old_quality == 3:
                 # Page has validated
-                status['validate'] = {"user": user, "timestamp": timestamp}
+                status['validate'] = {"user": user, "timestamp": timestamp, "revid": rev_id}
 
             if quality < 3 and old_quality == 3:
                 # Resetting proofread status
