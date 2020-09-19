@@ -40,5 +40,13 @@ print(WS.validator('Page:Landon_in_Literary_Gazette_1833.pdf/3'))
 ## Author
 * [Jay Prakash](https://meta.wikimedia.org/wiki/User:Jayprakash12345), Indic-TechCom
 
+## Instruction for Maintainer
+To deploy on PyPI
+```bash
+administrator@Jay-Prakash % python setup.py sdist bdist_wheel
+administrator@Jay-Prakash % twine check dist/*
+administrator@Jay-Prakash % twine upload dist/*
+```
+
 ## Licence
 This is Free Software, released under the MIT.
