@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 
 name = "pywikisource"
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 
 class WikiSourceApi():
@@ -80,17 +80,20 @@ class WikiSourceApi():
             "format": "json",
             "prop": "revisions",
             "titles": page,
-            "rvlimit": 50,
+            "rvlimit": "max",
             "rvdir": "newer",
-            "rvprop": "user|timestamp|content|ids"
+            "rvslots": "*",
+            "rvprop": "user|timestamp|content|ids|size"
         }
         data = requests.get(url=self.url_endpoint, params=param).json()
         revs = list(data["query"]["pages"].values())[0]["revisions"]
 
         old_quality = False;
+        page_size = None
 
         for i in revs:
-            content = i['*']
+            content = i["slots"]["main"]['*']
+            page_size = i["size"]
 
             matches = re.findall(r'<pagequality level=\"(\d)\" user=\"(.*?)\" />', content)
 
@@ -122,6 +125,7 @@ class WikiSourceApi():
             old_quality = quality;
 
         status["code"] = quality
+        status["size"] = page_size
 
         return status
 
