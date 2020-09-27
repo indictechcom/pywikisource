@@ -55,8 +55,8 @@ class WikiSourceApi():
 
         soup = BeautifulSoup(page_soure.text, 'html.parser')
 
-        for div in soup.find_all('div', {"class": 'index-pagelist'}):
-            a = div.find_all('a', {'href': True})
+        for span in soup.find_all('span', {"class": 'prp-index-pagelist'}):
+            a = span.find_all('a', {'href': True})
             for ach in a:
                 # Rid non-exist pages
                 if (ach['class'] == ["new"]) == True:
