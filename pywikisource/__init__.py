@@ -35,7 +35,7 @@ class WikiSourceApi():
             'format': 'json',
             'prop': 'imageinfo',
             'titles': 'File:{}'.format(index),
-            'iilimit': '50',
+            'iilimit': 'max',
             'iiprop': 'size'
         }
 
