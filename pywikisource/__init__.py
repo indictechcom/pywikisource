@@ -18,7 +18,7 @@ __version__ = '0.0.3'
 
 class WikiSourceApi():
 
-    def __init__(self, lang):
+    def __init__(self, lang, userAgent=None):
 
         if lang is None:
             raise TypeError(
@@ -26,6 +26,13 @@ class WikiSourceApi():
         else:
             self.lang = lang
             self.url_endpoint = 'https://{}.wikisource.org/w/api.php'.format(self.lang)
+
+        if userAgent is None:
+            userAgentWarn = "MyCoolTool/1.1 (https://example.org/MyCoolTool/; MyCoolTool@example.org) pywikisource/0.0.4"
+            print( f"userAgent parameter is missing!\n Put userAgent='{userAgentWarn}' in WikiSourceApi instance." )
+
+        self.ses = requests.Session()
+        self.ses.headers["User-Agent"] = userAgent
 
     # To get the number of page in the index book
     def numpage(self, index):
@@ -39,7 +46,7 @@ class WikiSourceApi():
             'iiprop': 'size'
         }
 
-        data = requests.get(url=self.url_endpoint, params=param).json()
+        data = self.ses.get(url=self.url_endpoint, params=param).json()
 
         num_pages = list(data['query']['pages'].values())[0]['imageinfo'][0]['pagecount']
 
@@ -51,7 +58,7 @@ class WikiSourceApi():
         page_list = []
 
         # Get page source
-        page_soure = requests.get(('https://{}.wikisource.org/wiki/Index:{}').format(self.lang, index))
+        page_soure = self.ses.get(('https://{}.wikisource.org/wiki/Index:{}').format(self.lang, index))
 
         soup = BeautifulSoup(page_soure.text, 'html.parser')
 
@@ -85,7 +92,7 @@ class WikiSourceApi():
             "rvslots": "*",
             "rvprop": "user|timestamp|content|ids|size"
         }
-        data = requests.get(url=self.url_endpoint, params=param).json()
+        data = self.ses.get(url=self.url_endpoint, params=param).json()
         revs = list(data["query"]["pages"].values())[0]["revisions"]
 
         old_quality = False;
