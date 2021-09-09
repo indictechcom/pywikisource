@@ -19,6 +19,10 @@ from pywikisource import WikiSourceApi
 # Create the Wikisource object
 WS = WikiSourceApi('en')
 
+# or
+userAgent = "MyCoolTool/1.1 (https://example.org/MyCoolTool/; MyCoolTool@example.org) pywikisource/0.0.4"
+WS = WikiSourceApi('en', userAgent)  # It is recommended to add user agent.
+
 # Get page list
 pageList = WS.createdPageList('Landon in Literary Gazette 1833.pdf')
 for page in pageList:
