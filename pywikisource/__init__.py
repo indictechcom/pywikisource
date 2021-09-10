@@ -76,15 +76,20 @@ class WikiSourceApi():
     # To get the page status with proofread and validate
     def pageStatus(self, page):
 
+        param = self.__getPageQueryParam(page)
+        data = self.ses.get(url=self.url_endpoint, params=param).json()
+        revs = list(data["query"]["pages"].values())[0]["revisions"]
+
+        return self.analyzeRevisions(revs)
+
+    # To analyze page's revision
+    def analyzeRevisions(self, revs):
+
         status = {
             "code": None,
             "proofread": None,
             "validate": None
         }
-
-        param = self.__getPageQueryParam(page)
-        data = self.ses.get(url=self.url_endpoint, params=param).json()
-        revs = list(data["query"]["pages"].values())[0]["revisions"]
 
         old_quality = False;
         page_size = None
