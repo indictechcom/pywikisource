@@ -82,16 +82,7 @@ class WikiSourceApi():
             "validate": None
         }
 
-        param = {
-            "action": "query",
-            "format": "json",
-            "prop": "revisions",
-            "titles": page,
-            "rvlimit": "max",
-            "rvdir": "newer",
-            "rvslots": "*",
-            "rvprop": "user|timestamp|content|ids|size"
-        }
+        param = self.__getPageQueryParam(page)
         data = self.ses.get(url=self.url_endpoint, params=param).json()
         revs = list(data["query"]["pages"].values())[0]["revisions"]
 
@@ -146,3 +137,15 @@ class WikiSourceApi():
         val = self.pageStatus(page)["validate"]
 
         return val
+
+    def __getPageQueryParam(self, page):
+        return {
+            "action": "query",
+            "format": "json",
+            "prop": "revisions",
+            "titles": page,
+            "rvlimit": "max",
+            "rvdir": "newer",
+            "rvslots": "*",
+            "rvprop": "user|timestamp|content|ids|size"
+        }
