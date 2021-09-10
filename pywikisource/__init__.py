@@ -10,6 +10,8 @@ import requests
 import re
 import urllib
 from bs4 import BeautifulSoup
+import asyncio
+from aiohttp import ClientSession, TCPConnector
 
 name = "pywikisource"
 
@@ -22,7 +24,7 @@ class WikiSourceApi():
 
         if lang is None:
             raise TypeError(
-                "Language pamaeter is missing! put lang='code' in WikiSourceApi object.")
+                "Language pamaeter is missing! put lang='code' in WikiSourceApi instance.")
         else:
             self.lang = lang
             self.url_endpoint = 'https://{}.wikisource.org/w/api.php'.format(self.lang)
@@ -31,6 +33,7 @@ class WikiSourceApi():
             userAgentWarn = "MyCoolTool/1.1 (https://example.org/MyCoolTool/; MyCoolTool@example.org) pywikisource/0.0.4"
             print( f"userAgent parameter is missing!\n Put userAgent='{userAgentWarn}' in WikiSourceApi instance." )
 
+        self.userAgent = userAgent
         self.ses = requests.Session()
         self.ses.headers["User-Agent"] = userAgent
 
@@ -142,6 +145,37 @@ class WikiSourceApi():
         val = self.pageStatus(page)["validate"]
 
         return val
+
+    # Async function to get whole book's page status at once
+    # This runs many requests parallelly
+    async def bookStatus(self, pageArr, limit=25):
+        result = {}
+        connector = TCPConnector(limit=limit)
+        async with ClientSession(connector=connector) as session:
+                t = self.__getAsyncTasks(session, pageArr)
+                resp = await asyncio.gather(*t)
+
+                for r in resp:
+                    r = await r.json()
+                    data = list(r["query"]["pages"].values())[0]
+                    result[ data["title"] ] = self.analyzeRevisions( data["revisions"] )
+
+        return result
+
+    # Gathers tasks to make parallel requests
+    def __getAsyncTasks(self, session, pageArr):
+        tasks = []
+        headers = {}
+
+        if self.userAgent:
+            headers["User-Agent"] = self.userAgent
+
+        for pagename in pageArr:
+                param = self.__getPageQueryParam(pagename)
+
+                sesCoroutine = session.get( self.url_endpoint, params=param, headers=headers, ssl=False)
+                tasks.append( asyncio.create_task( sesCoroutine ) )
+        return tasks
 
     def __getPageQueryParam(self, page):
         return {

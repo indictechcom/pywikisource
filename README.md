@@ -12,7 +12,7 @@ It is wikisource dedicated API library.
 ## Installation
 * `pip install pywikisource`
 
-## Demo
+## Demo 1
 ```python
 from pywikisource import WikiSourceApi
 
@@ -38,6 +38,32 @@ print(WS.proofreader('Page:Landon_in_Literary_Gazette_1833.pdf/3'))
 
 # Get the validator of single page
 print(WS.validator('Page:Landon_in_Literary_Gazette_1833.pdf/3'))
+
+```
+
+## Demo 2 (Async bookStatus; Since pywikisource 0.0.4)
+```python
+from pywikisource import WikiSourceApi
+import asyncio
+
+userAgent = "MyCoolTool/1.1 (https://example.org/MyCoolTool/; MyCoolTool@example.org) pywikisource/0.0.4"
+WS = WikiSourceApi('ta', userAgent)  # It is recommended to add user agent.
+
+books = [
+    "தமிழர் வரலாறு 1, பி. டி. சீனிவாச அய்யங்கார்.pdf",
+    "தமிழர் வரலாறு 2, பி. டி. சீனிவாச அய்யங்கார்.pdf",
+    "மாவீரர் மருதுபாண்டியர்.pdf",
+    "சேரன் செங்குட்டுவன்.djvu"
+]
+
+for book in books:
+    pageList = WS.createdPageList( book )
+
+    # Default limit is 25 requests per second
+    data = asyncio.run( WS.bookStatus( pageList, limit=50 ) )
+
+    for title, status in data.items():
+        print( title, " -->  ",  status["code"] )
 
 ```
 

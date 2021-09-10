@@ -15,7 +15,9 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         'requests',
-        'bs4'
+        'bs4',
+        'asyncio',
+        'aiohttp'
     ],
     setup_requires=['wheel'],
     classifiers=[
