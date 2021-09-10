@@ -91,7 +91,7 @@ class WikiSourceApi():
             "validate": None
         }
 
-        old_quality = False;
+        old_quality = False
         page_size = None
 
         for i in revs:
@@ -126,7 +126,7 @@ class WikiSourceApi():
                 status['proofread'] = None
                 status['validate'] = None
 
-            old_quality = quality;
+            old_quality = quality
 
         status["code"] = quality
         status["size"] = page_size
