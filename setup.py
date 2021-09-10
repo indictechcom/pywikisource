@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pywikisource",
-    version="0.0.3",
+    version="0.0.4",
     author="Jay Prakash",
     author_email="0freerunning@gmail.com",
     description="Wikisource Dedicated Python API library",

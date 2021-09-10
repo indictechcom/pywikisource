@@ -15,7 +15,7 @@ from aiohttp import ClientSession, TCPConnector
 
 name = "pywikisource"
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 
 
 class WikiSourceApi():
