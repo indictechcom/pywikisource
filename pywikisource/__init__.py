@@ -8,7 +8,7 @@
 
 import requests
 import re
-import urllib
+from urllib import parse
 from bs4 import BeautifulSoup
 import asyncio
 from aiohttp import ClientSession, TCPConnector
@@ -72,7 +72,7 @@ class WikiSourceApi():
                 if (ach['class'] == ["new"]) == True:
                     continue
                 else:
-                    page_list.append(urllib.parse.unquote(ach['href'])[6:])
+                    page_list.append(parse.unquote(ach['href'])[6:])
 
         return page_list
 
