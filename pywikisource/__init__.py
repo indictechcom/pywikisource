@@ -3,7 +3,7 @@
 # Wiksource API Library
 #
 # (C) 2019 Jay Prakash <0freerunning@gmail.com>
-# Licensed under the MIT License // http://opensource.org/licenses/MIT
+# Licensed under the MIT License // https://opensource.org/licenses/MIT
 #
 
 import requests
