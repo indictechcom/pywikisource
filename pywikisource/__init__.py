@@ -51,9 +51,12 @@ class WikiSourceApi():
 
         data = self.ses.get(url=self.url_endpoint, params=param).json()
 
-        num_pages = list(data['query']['pages'].values())[0]['imageinfo'][0]['pagecount']
+        try:
+            num_pages = list(data['query']['pages'].values())[0]['imageinfo'][0]['pagecount']
 
-        return num_pages
+            return num_pages
+        except:
+            return False
 
     # To get created pages of index book
     def createdPageList(self, index):
@@ -81,9 +84,12 @@ class WikiSourceApi():
 
         param = self.__getPageQueryParam(page)
         data = self.ses.get(url=self.url_endpoint, params=param).json()
-        revs = list(data["query"]["pages"].values())[0]["revisions"]
+        try:
+            revs = list(data["query"]["pages"].values())[0]["revisions"]
 
-        return self.analyzeRevisions(revs)
+            return self.analyzeRevisions(revs)
+        except:
+            return False
 
     # To analyze page's revision
     def analyzeRevisions(self, revs):
