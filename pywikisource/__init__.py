@@ -63,19 +63,22 @@ class WikiSourceApi():
 
         page_list = []
 
+        params = {
+		    'action': 'query',
+		    'list': 'proofreadpagesinindex',
+		    'prppiititle': 'Index:' + index,
+		    'prppiiprop': 'ids|title',
+            'format': 'json'
+        }
+
         # Get page source
-        page_soure = self.ses.get(('https://{}.wikisource.org/wiki/Index:{}').format(self.lang, index))
-
-        soup = BeautifulSoup(page_soure.text, 'html.parser')
-
-        for span in soup.find_all('span', {"class": 'prp-index-pagelist'}):
-            a = span.find_all('a', {'href': True})
-            for ach in a:
-                # Rid non-exist pages
-                if (ach['class'] == ["new"]) == True:
-                    continue
-                else:
-                    page_list.append(parse.unquote(ach['href'])[6:])
+        data = self.ses.get(self.url_endpoint, params=params).json()
+        try:
+            raw_page_list = list(data['query']['proofreadpagesinindex'])
+            for i in raw_page_list:
+                page_list.append(i['title'])
+        except:
+            pass
 
         return page_list
 
