@@ -46,7 +46,8 @@ class WikiSourceApi():
             'prop': 'imageinfo',
             'titles': 'File:{}'.format(index),
             'iilimit': 'max',
-            'iiprop': 'size'
+            'iiprop': 'size',
+            'origin' : '*'
         }
 
         data = self.ses.get(url=self.url_endpoint, params=param).json()
@@ -68,7 +69,8 @@ class WikiSourceApi():
 		    'list': 'proofreadpagesinindex',
 		    'prppiititle': 'Index:' + index,
 		    'prppiiprop': 'ids|title',
-            'format': 'json'
+            'format': 'json',
+            'origin' : '*'
         }
 
         # Get page source
@@ -195,5 +197,6 @@ class WikiSourceApi():
             "rvlimit": "max",
             "rvdir": "newer",
             "rvslots": "*",
-            "rvprop": "user|timestamp|content|ids|size"
+            "rvprop": "user|timestamp|content|ids|size",
+            'origin' : '*'
         }
