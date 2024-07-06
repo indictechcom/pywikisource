@@ -159,7 +159,7 @@ class WikiSourceApi():
 
     # Async function to get whole book's page status at once
     # This runs many requests parallelly
-    async def bookStatus(self, pageArr, limit=25):
+    async def bookStatus(self, pageArr, limit=40):
         result = {}
         connector = TCPConnector(limit=limit)
         async with ClientSession(connector=connector) as session:
