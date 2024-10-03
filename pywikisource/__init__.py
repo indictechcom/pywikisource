@@ -200,3 +200,23 @@ class WikiSourceApi():
             "rvprop": "user|timestamp|content|ids|size",
             'origin' : '*'
         }
+
+    def get_image_info(self, filename):
+        params = {
+            "action": "query",
+            "format": "json",
+            "prop": "imageinfo",
+            "titles": f"File:{filename}"
+        }
+
+        response = self.ses.get(url=self.url_endpoint, params=params)
+        data = response.json()
+
+        try:
+            pages = data["query"]["pages"]
+            for k, v in pages.items():
+                title = v["title"]
+                user = v["imageinfo"][0]["user"]
+                return {"title": title, "uploaded_by": user}
+        except KeyError:
+            return {"error": "Unable to retrieve image information"}
