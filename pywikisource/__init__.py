@@ -12,131 +12,114 @@ from urllib import parse
 from bs4 import BeautifulSoup
 import asyncio
 from aiohttp import ClientSession, TCPConnector
+from typing import Optional, Dict, List, Union, Any
 
 name = "pywikisource"
 
 __version__ = '0.0.5'
 
 
-class WikiSourceApi():
+class WikiSourceApi:
 
-    def __init__(self, lang, userAgent=None):
-
+    def __init__(self, lang: str, userAgent: Optional[str] = None) -> None:
         if lang is None:
-            raise TypeError(
-                "Language pamaeter is missing! put lang='code' in WikiSourceApi instance.")
+            raise TypeError("Language parameter is missing! put lang='code' in WikiSourceApi instance.")
         else:
-            self.lang = lang
-            self.url_endpoint = 'https://{}.wikisource.org/w/api.php'.format(self.lang)
+            self.lang: str = lang
+            self.url_endpoint: str = f'https://{self.lang}.wikisource.org/w/api.php'
 
         if userAgent is None:
             userAgentWarn = "MyCoolTool/1.1 (https://example.org/MyCoolTool/; MyCoolTool@example.org) pywikisource/0.0.4"
-            print( f"userAgent parameter is missing!\n Put userAgent='{userAgentWarn}' in WikiSourceApi instance." )
+            print(f"userAgent parameter is missing!\n Put userAgent='{userAgentWarn}' in WikiSourceApi instance.")
 
-        self.userAgent = userAgent
-        self.ses = requests.Session()
-        self.ses.headers["User-Agent"] = userAgent
+        self.userAgent: Optional[str] = userAgent
+        self.ses: requests.Session = requests.Session()
+        self.ses.headers["User-Agent"] = userAgent or userAgentWarn
 
-    # To get the number of page in the index book
-    def numpage(self, index):
-
+    def numpage(self, index: str) -> Union[int, bool]:
         param = {
             'action': 'query',
             'format': 'json',
             'prop': 'imageinfo',
-            'titles': 'File:{}'.format(index),
+            'titles': f'File:{index}',
             'iilimit': 'max',
             'iiprop': 'size',
-            'origin' : '*'
+            'origin': '*'
         }
 
-        data = self.ses.get(url=self.url_endpoint, params=param).json()
+        data: Dict[str, Any] = self.ses.get(url=self.url_endpoint, params=param).json()
 
         try:
-            num_pages = list(data['query']['pages'].values())[0]['imageinfo'][0]['pagecount']
-
+            num_pages: int = list(data['query']['pages'].values())[0]['imageinfo'][0]['pagecount']
             return num_pages
-        except:
+        except (KeyError, IndexError):
             return False
 
-    # To get created pages of index book
-    def createdPageList(self, index):
-
-        page_list = []
+    def createdPageList(self, index: str) -> List[str]:
+        page_list: List[str] = []
 
         params = {
-		    'action': 'query',
-		    'list': 'proofreadpagesinindex',
-		    'prppiititle': 'Index:' + index,
-		    'prppiiprop': 'ids|title',
+            'action': 'query',
+            'list': 'proofreadpagesinindex',
+            'prppiititle': f'Index:{index}',
+            'prppiiprop': 'ids|title',
             'format': 'json',
-            'origin' : '*'
+            'origin': '*'
         }
 
-        # Get page source
-        data = self.ses.get(self.url_endpoint, params=params).json()
+        data: Dict[str, Any] = self.ses.get(self.url_endpoint, params=params).json()
         try:
-            raw_page_list = list(data['query']['proofreadpagesinindex'])
+            raw_page_list = data['query']['proofreadpagesinindex']
             for i in raw_page_list:
                 page_list.append(i['title'])
-        except:
+        except KeyError:
             pass
 
         return page_list
 
-    # To get the page status with proofread and validate
-    def pageStatus(self, page):
-
-        param = self.__getPageQueryParam(page)
-        data = self.ses.get(url=self.url_endpoint, params=param).json()
+    def pageStatus(self, page: str) -> Union[Dict[str, Any], bool]:
+        param: Dict[str, str] = self.__getPageQueryParam(page)
+        data: Dict[str, Any] = self.ses.get(url=self.url_endpoint, params=param).json()
         try:
             revs = list(data["query"]["pages"].values())[0]["revisions"]
-
             return self.analyzeRevisions(revs)
-        except:
+        except KeyError:
             return False
 
-    # To analyze page's revision
-    def analyzeRevisions(self, revs):
-
-        status = {
+    def analyzeRevisions(self, revs: List[Dict[str, Any]]) -> Dict[str, Any]:
+        status: Dict[str, Optional[Dict[str, Union[str, int]]]] = {
             "code": None,
             "proofread": None,
             "validate": None
         }
 
-        old_quality = False
-        page_size = None
+        old_quality: Optional[int] = None
+        page_size: Optional[int] = None
 
         for i in revs:
-            content = i["slots"]["main"]['*']
+            content: str = i["slots"]["main"]['*']
             page_size = i["size"]
 
             matches = re.findall(r'<pagequality level=\"(\d)\" user=\"(.*?)\" />', content)
 
-            quality = int(matches[0][0])
-            user = matches[0][1]
-            timestamp = i['timestamp']
-            rev_id = i['revid']
+            quality: int = int(matches[0][0])
+            user: str = matches[0][1]
+            timestamp: str = i['timestamp']
+            rev_id: int = i['revid']
 
-            if (quality == 3) and ( (not old_quality) or old_quality < 3):
-                # Page has proofread
+            if (quality == 3) and (old_quality is None or old_quality < 3):
                 status['proofread'] = {"user": user, "timestamp": timestamp, "revid": rev_id}
 
             if quality == 4 and old_quality == 3:
-                # Page has validated
                 status['validate'] = {"user": user, "timestamp": timestamp, "revid": rev_id}
 
             if quality < 3 and old_quality == 3:
-                # Resetting proofread status
                 status['proofread'] = None
 
             if quality == 3 and old_quality == 4:
-                # Resetting validate status
                 status['validate'] = None
 
             if quality < 3 and old_quality == 4:
-                # Resetting proofread and validate status
                 status['proofread'] = None
                 status['validate'] = None
 
@@ -147,48 +130,40 @@ class WikiSourceApi():
 
         return status
 
-    def proofreader(self, page):
-        pr = self.pageStatus(page)["proofread"]
+    def proofreader(self, page: str) -> Optional[Dict[str, Union[str, int]]]:
+        return self.pageStatus(page).get("proofread")
 
-        return pr
+    def validator(self, page: str) -> Optional[Dict[str, Union[str, int]]]:
+        return self.pageStatus(page).get("validate")
 
-    def validator(self, page):
-        val = self.pageStatus(page)["validate"]
-
-        return val
-
-    # Async function to get whole book's page status at once
-    # This runs many requests parallelly
-    async def bookStatus(self, pageArr, limit=40):
-        result = {}
+    async def bookStatus(self, pageArr: List[str], limit: int = 40) -> Dict[str, Dict[str, Any]]:
+        result: Dict[str, Dict[str, Any]] = {}
         connector = TCPConnector(limit=limit)
         async with ClientSession(connector=connector) as session:
-                t = self.__getAsyncTasks(session, pageArr)
-                resp = await asyncio.gather(*t)
+            tasks = self.__getAsyncTasks(session, pageArr)
+            responses = await asyncio.gather(*tasks)
 
-                for r in resp:
-                    r = await r.json()
-                    data = list(r["query"]["pages"].values())[0]
-                    result[ data["title"] ] = self.analyzeRevisions( data["revisions"] )
+            for r in responses:
+                r_json = await r.json()
+                data = list(r_json["query"]["pages"].values())[0]
+                result[data["title"]] = self.analyzeRevisions(data["revisions"])
 
         return result
 
-    # Gathers tasks to make parallel requests
-    def __getAsyncTasks(self, session, pageArr):
-        tasks = []
-        headers = {}
+    def __getAsyncTasks(self, session: ClientSession, pageArr: List[str]) -> List[asyncio.Task]:
+        tasks: List[asyncio.Task] = []
+        headers: Dict[str, str] = {}
 
         if self.userAgent:
             headers["User-Agent"] = self.userAgent
 
         for pagename in pageArr:
-                param = self.__getPageQueryParam(pagename)
+            param = self.__getPageQueryParam(pagename)
+            tasks.append(asyncio.create_task(session.get(self.url_endpoint, params=param, headers=headers, ssl=False)))
 
-                sesCoroutine = session.get( self.url_endpoint, params=param, headers=headers, ssl=False)
-                tasks.append( asyncio.create_task( sesCoroutine ) )
         return tasks
 
-    def __getPageQueryParam(self, page):
+    def __getPageQueryParam(self, page: str) -> Dict[str, str]:
         return {
             "action": "query",
             "format": "json",
@@ -198,5 +173,5 @@ class WikiSourceApi():
             "rvdir": "newer",
             "rvslots": "*",
             "rvprop": "user|timestamp|content|ids|size",
-            'origin' : '*'
+            'origin': '*'
         }
