@@ -17,8 +17,10 @@ setuptools.setup(
         'requests',
         'bs4',
         'asyncio',
-        'aiohttp'
+        'aiohttp',
+        'typing-extensions'# included typing-extensions for python 3.6, typing is best for strictly python>= 3.9
     ],
+    python_requires='>=3.6',
     setup_requires=['wheel'],
     classifiers=[
         "Programming Language :: Python :: 3",
