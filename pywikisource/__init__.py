@@ -195,3 +195,27 @@ class WikiSourceApi:
                 return {"title": title, "uploaded_by": user}
         except KeyError:
             return {"error": "Unable to retrieve image information"}
+
+def  isPageExist(self, page: str) -> bool:
+        """
+        Check if a page exists on the WikiSource
+        Args:
+            page (str): The title of the page to check (e.g., 'Page:SomeTitle').
+        Returns:
+            bool: True if the page exists, False otherwise.
+        """
+        param = {
+            "action": "query",
+            "format": "json",
+            "titles": page,
+            'origin': '*'
+        }
+
+        data: Dict[str, Any] = self.ses.get(self.url_endpoint, params=param).json()
+
+        # Check if the page exists in the response
+        if "query" in data and "pages" in data["query"]:
+            pages = data["query"]["pages"]
+            if "-1" not in pages:  # Page exists if there is no "-1" in the response
+                return True
+        return False 
