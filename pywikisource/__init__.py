@@ -219,3 +219,48 @@ def  isPageExist(self, page: str) -> bool:
             if "-1" not in pages:  # Page exists if there is no "-1" in the response
                 return True
         return False 
+
+def getUserContributions(self, user: str, start_date: str, end_date: str , namespace: int) -> List[str]:
+    """
+    Fetch all user contribution page titles in namespace 10 (Template namespace) within a given date range.
+
+    Args:
+        user (str): The username whose contributions to fetch.
+        start_date (str): The start date in the format 'YYYY-MM-DDTHH:MM:SSZ'.
+        end_date (str): The end date in the format 'YYYY-MM-DDTHH:MM:SSZ'.
+
+    Returns:
+        List[str]: A list of page titles contributed to by the user.
+    """
+    contributions = []
+    params = {
+        "action": "query",
+        "format": "json",
+        "list": "usercontribs",
+        "ucuser": user,
+        "ucstart": start_date,
+        "ucend": end_date,
+        "uclimit": "max",  # Fetch up to 500 contributions per request
+        'origin': '*'
+    }
+
+    if namespace:
+        params["ucnamespace"] = namespace
+                       
+    while True:
+        # Make the API request
+        response = self.ses.get(self.url_endpoint, params=params)
+        data = response.json()
+
+        # Process contributions from the current batch
+        if "query" in data and "usercontribs" in data["query"]:
+            for contrib in data["query"]["usercontribs"]:
+                contributions.append(contrib["title"])
+
+        # Check if there is a continuation token to fetch more contributions
+        if "continue" in data:
+            params.update(data["continue"])  # Update parameters for the next request
+        else:
+            break  # No more contributions to fetch
+
+    return contributions
