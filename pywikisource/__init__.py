@@ -258,6 +258,6 @@ class WikiSourceApi:
     def getUserPageContributions(self, user: str, start_date: str, end_date: str) -> List[str]:
         return self.getUserContributions(user, start_date, end_date, namespace_data[self.lang].page)
     
-    def getUserPageContributions(self, user: str, start_date: str, end_date: str) -> List[str]:
+    def getUserIndexContributions(self, user: str, start_date: str, end_date: str) -> List[str]:
         return self.getUserContributions(user, start_date, end_date, namespace_data[self.lang].index)
 
