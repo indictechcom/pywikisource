@@ -219,3 +219,37 @@ class WikiSourceApi:
                 if "-1" not in pages:  # Page exists if there is no "-1" in the response
                     return True
             return False 
+    
+    def getUserContributions(self, user: str, start_date: str, end_date: str , namespace: int) -> List[str]:
+        contributions = []
+        params = {
+            "action": "query",
+            "format": "json",
+            "list": "usercontribs",
+            "ucuser": user,
+            "ucstart": start_date,
+            "ucend": end_date,
+            "uclimit": "max",
+            'origin': '*'
+        }
+
+        if namespace:
+            params["ucnamespace"] = namespace
+                        
+        while True:
+            # Make the API request
+            response = self.ses.get(self.url_endpoint, params=params)
+            data = response.json()
+
+            # Process contributions from the current batch
+            if "query" in data and "usercontribs" in data["query"]:
+                for contrib in data["query"]["usercontribs"]:
+                    contributions.append(contrib["title"])
+
+            # Check if there is a continuation token to fetch more contributions
+            if "continue" in data:
+                params.update(data["continue"])  # Update parameters for the next request
+            else:
+                break
+
+        return contributions
