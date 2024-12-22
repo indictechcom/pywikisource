@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 import asyncio
 from aiohttp import ClientSession, TCPConnector
 from typing import Optional, Dict, List, Union, Any
+from constant import namespace_data
 
 name = "pywikisource"
 
@@ -253,3 +254,10 @@ class WikiSourceApi:
                 break
 
         return contributions
+    
+    def getUserPageContributions(self, user: str, start_date: str, end_date: str) -> List[str]:
+        return self.getUserContributions(user, start_date, end_date, namespace_data[self.lang].page)
+    
+    def getUserIndexContributions(self, user: str, start_date: str, end_date: str) -> List[str]:
+        return self.getUserContributions(user, start_date, end_date, namespace_data[self.lang].index)
+
